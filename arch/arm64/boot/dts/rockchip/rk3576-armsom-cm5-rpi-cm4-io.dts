@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
+ *	rk3576-evb1-v10-linux.dts
+ */
+
+/dts-v1/;
+
+#include "rk3576-armsom-cm5-rpi-cm4-io.dtsi"
+#include "rk3576-linux.dtsi"
+// #include "rk3576-armsom-cm5-rpi-cm4-io-display.dtsi"
+// #include "rk3576-armsom-cm5-rpi-cm4-io-display-2.4.dtsi"
+#include "rk3576-armsom-cm5-rpi-cm4-io-camera0.dtsi"
+#include "rk3576-armsom-cm5-rpi-cm4-io-camera1.dtsi"
+
+/ {
+	model = "armsom cm5-cm4-io board";
+	compatible = "armsom,cm5-cm4-io", "rockchip,rk3576";
+};

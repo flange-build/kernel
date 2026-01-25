@@ -1,0 +1,116 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/display/media-bus-format.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+#include "rk3566.dtsi"
+#include <dt-bindings/display/rockchip_vop.h>
+
+#include "rk3566-neons-core.dtsi"
+#include "rk3566-neons-core-hdmi.dtsi"
+//#include "rk3566-neons-core-csi.dtsi"
+#include "rk3566-neons-core-csi-cm4-cam1.dtsi"
+#include "rk3566-neons-core-gmac1.dtsi"
+
+/ {
+	model = "NEONS RK3566 Core - Waveshare CM4 NANO B";
+	compatible = "neons,core3566", "rockchip,rk3566";
+
+	rk_headset: rk-headset {
+		compatible = "rockchip_headset";
+		headset_gpio = <&gpio0 RK_PC5 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&hp_det>;
+	};
+
+    leds: leds {
+        compatible = "gpio-leds";
+        work_led: work{
+            gpios = <&gpio0 RK_PC5 GPIO_ACTIVE_HIGH>;
+            linux,default-trigger = "timer";
+            default-state = "on";
+		};
+	};
+
+	mcp251x_clk:mcp251x-clk{
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <16000000>;
+    };
+    
+    sc16is752_clk:sc16is752-clk{
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-output-names = "sc16is752_clk";
+        clock-frequency = <14745600>;
+    };
+
+};
+
+&pinctrl {
+	headphone {
+		hp_det: hp-det {
+			rockchip,pins = <0 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
+
+//用户三色灯
+&leds {
+	status = "okay";
+};
+
+//耳机插入检测，不使用扩展板情况需关闭，否则默认会检测到耳机插入
+&rk_headset {
+	status = "disabled";
+};
+
+//用户串口3
+&uart3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3m1_xfer>;
+};
+
+//用户I2C2
+&i2c2 {
+	status = "okay";
+
+	/*添加你的I2C设备参考
+	gt1x: gt1x@14 {
+		compatible = "goodix,gt1x";
+		reg = <0x14>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&touch_gpio>;
+		goodix,rst-gpio = <&gpio0 RK_PB6 GPIO_ACTIVE_HIGH>;
+		goodix,irq-gpio = <&gpio0 RK_PB5 IRQ_TYPE_LEVEL_LOW>;
+	};*/
+};
+
+&spi3 {
+	status = "okay";
+	max-freq = <48000000>;
+	dma-names = "tx","rx";
+	pinctrl-names = "default", "high_speed";
+	pinctrl-0 = <&spi3m1_cs0 &spi3m1_pins>;
+	pinctrl-1 = <&spi3m1_cs0 &spi3m1_pins_hs>;
+    spi0_dev@0 {
+        compatible = "rockchip,spidev";
+        reg = <0>;
+        spi-max-frequency = <12000000>;
+        spi-lsb-first;
+		status = "okay";
+    };
+};
+
+&pwm8 {
+	status = "okay";
+};
+
+&pwm9 {
+	status = "okay";
+};
+
+&pwm14 {
+	status = "okay";
+};
