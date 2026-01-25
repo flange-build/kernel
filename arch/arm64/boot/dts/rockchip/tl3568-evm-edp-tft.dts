@@ -1,0 +1,62 @@
+
+#include "tl3568-evm.dts"
+
+/ {
+	model = "TL3568-EVM EDP TFT-LCD";
+};
+
+/* hdmi */
+&hdmi_in_vp0{
+	status = "disabled";
+};
+
+&hdmi {
+	status = "disabled";
+};
+
+/* edp */
+&edp_in_vp0 {
+	status = "okay";
+};
+
+&edp {
+	status = "okay";
+};
+
+&edp_panel {
+	status = "okay";
+};
+
+/* lvds */
+&lvds_in_vp2 {
+	status = "disabled";
+};
+
+&lvds {
+	status = "disabled";
+};
+
+&lvds_panel {
+	status = "disabled";
+};
+
+&video_phy0 {
+	status = "disabled";
+};
+
+&route_lvds {
+	status = "disabled";
+};
+
+ /* tft lcd */
+&rgb_in_vp2 {
+	status = "okay";
+};
+
+&rgb {
+	status = "okay";
+};
+
+&tft_lcd_panel {
+	status = "okay";
+};

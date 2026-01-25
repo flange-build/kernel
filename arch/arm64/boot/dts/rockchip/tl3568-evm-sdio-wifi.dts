@@ -1,0 +1,25 @@
+
+#include "tl3568-evm.dts"
+
+/ {
+	model = "TL3568-EVM SDIO-WIFI";
+};
+
+&sdio_pwrseq {
+	status = "okay";
+};
+
+&wireless_wlan {
+	status = "okay";
+};
+
+&pinctrl {
+	/delete-property/ pinctrl-0;
+	pinctrl-0 = <&ext_wdt_wdi
+			&ext_wdt_set
+			&usb_net_reset /* GPIO3_D4 is used to usb net reset pin operating in uboot */
+			&heartbeat_led_pin
+			&disk_led_pin
+			&user_led0_pin
+			&user_led1_pin>;
+};

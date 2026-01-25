@@ -1,0 +1,1046 @@
+
+#include "rk3568-evb1-ddr4-v10-linux.dts"
+#include "rk3568-amp.dtsi"
+#include <dt-bindings/display/media-bus-format.h>
+
+/ {
+	model = "TL3568-EVM";
+
+	fiq-debugger {
+		compatible = "rockchip,fiq-debugger";
+		rockchip,serial-id = <2>;
+		rockchip,wake-irq = <0>;
+
+		rockchip,irq-mode-enable = <1>;
+		rockchip,baudrate = <1500000>;
+ 	};
+
+	/delete-node/ gpio-regulator;
+	vcc3v3_pcie_fake: vcc3v3-pcie-fake {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc3v3_pcie_fake";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&dc_12v>;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		autorepeat;
+		pinctrl-names = "default";
+		pinctrl-0 = <&user_gpio_key0_pin>;
+
+		user_key@2 {
+			label = "user-key2";
+			linux,code = <KEY_PROG1>;
+			gpios = <&gpio0 RK_PB0 GPIO_ACTIVE_LOW>;
+			debounce-interval = <0>;
+		};
+	};
+
+	/delete-node/ adc-keys;
+	adc-key0 {
+		compatible = "adc-keys";
+		io-channels = <&saradc 0>;
+		io-channel-names = "buttons";
+		keyup-threshold-microvolt = <1800000>;
+		poll-interval = <100>;
+
+		user_key@0 {
+			label = "user-key0";
+			linux,code = <KEY_PROG1>;
+			press-threshold-microvolt = <1750>;
+		};
+	};
+
+	adc-key1 {
+		compatible = "adc-keys";
+		io-channels = <&saradc 1>;
+		io-channel-names = "buttons";
+		keyup-threshold-microvolt = <1800000>;
+		poll-interval = <100>;
+
+		user_key@1 {
+			label = "user-key1";
+			linux,code = <KEY_PROG1>;
+			press-threshold-microvolt = <1750>;
+		};
+	};
+
+	lvds_panel: lvds-panel {
+		status = "okay";
+		compatible = "simple-panel";
+		backlight = <&backlight1>;
+		reset-delay-ms = <60>;
+		enable-delay-ms = <60>;
+		prepare-delay-ms = <60>;
+		unprepare-delay-ms = <60>;
+		disable-delay-ms = <60>;
+		bus-format = <MEDIA_BUS_FMT_RGB888_1X24>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&lvds_panel_enable>;
+		enable-gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_HIGH>;
+
+		width-mm = <210>;
+		height-mm = <157>;
+
+		display-timings {
+			native-mode = <&lvds_timing0>;
+			lvds_timing0: lvds-timing0 {
+				clock-frequency = <66000000>;
+				hactive = <1024>;
+				vactive = <768>;
+				hback-porch = <160>;
+				hfront-porch = <160>;
+				hsync-len = <2>;
+				vback-porch = <19>;
+				vfront-porch = <19>;
+				vsync-len = <2>;
+				hsync-active = <1>;
+				vsync-active = <1>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				panel_in_lvds: endpoint {
+					remote-endpoint = <&lvds_out_panel>;
+				};
+			};
+		};
+	};
+
+	/delete-node/ spdif-sound;
+	/delete-node/ spdif-out;
+
+	/* TFT-LCD */
+	tft_lcd_panel: tft-lcd-panel {
+		status = "disabled";
+		compatible = "simple-panel";
+		bus-format = <MEDIA_BUS_FMT_RGB888_1X24>;
+
+		display-timings {
+			native-mode = <&rgb_timing0>;
+
+			rgb_timing0: rgb-timing0 {
+				clock-frequency = <33000000>;
+				hactive = <800>;
+				vactive = <480>;
+				hfront-porch = <210>;
+				hsync-len = <30>;
+				hback-porch = <16>;
+				vfront-porch = <22>;
+				vsync-len = <13>;
+				vback-porch = <10>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <1>;
+			};
+		};
+
+		port {
+			panel_in_rgb: endpoint {
+				remote-endpoint = <&rgb_out_panel>;
+			};
+		};
+	};
+
+	edp_panel: edp-panel {
+		status = "disabled";
+		compatible = "simple-panel";
+		bus-format = <MEDIA_BUS_FMT_RGB888_1X24>;
+		bpc = <8>;
+
+		display-timings {
+			native-mode = <&edp_timing0>;
+
+			edp_timing0: edp-timing0 {
+				clock-frequency = <264300000>;
+				hactive = <2560>;
+				vactive = <1600>;
+				hfront-porch = <24>;
+				hsync-len = <35>;
+				hback-porch = <59>;
+				vfront-porch = <3>;
+				vsync-len = <6>;
+				vback-porch = <49>;
+				hsync-active = <0>;
+				vsync-active = <1>;
+				de-active = <1>;
+				pixelclk-active = <1>;
+			};
+		};
+
+		port {
+			panel_in_edp: endpoint {
+				remote-endpoint = <&edp_out_panel>;
+			};
+		};
+	};
+};
+
+&vop {
+    assigned-clocks = <&cru DCLK_VOP0>, <&cru DCLK_VOP1>, <&cru DCLK_VOP2>;
+    assigned-clock-parents = <&cru PLL_HPLL>, <&cru PLL_VPLL>, <&cru PLL_GPLL>;
+};
+
+&pmu_io_domains {
+	/* TL3568-EVM, open pmic sw0/1 */
+	vccio4-supply = <&vcc_3v3>;
+	vccio5-supply = <&vcc_3v3>;
+	vccio6-supply = <&vcc_3v3>;
+	vccio7-supply = <&vcc_3v3>;
+};
+
+&sdmmc0 {
+	vmmc-supply = <&vcc3v3_sd>;
+	/delete-property/ sd-uhs-sdr104; /* Do not support SD3.0 first, cause VDD_ADJ_SD ust be 3.3V */
+	/delete-property/ no-sdio;
+	/delete-property/ no-mmc;
+	supports-sd;
+};
+
+&rgmii_phy1 {
+	reg = <0x1>;
+};
+
+&gmac0 {
+	snps,reset-gpio = <&gpio2 RK_PC1 GPIO_ACTIVE_LOW>;
+	snps,reset-delays-us = <20000 20000 100000>;
+	tx_delay = <0x2a>;
+	rx_delay = <0x19>;
+
+	/delete-property/ pinctrl-0;
+	pinctrl-0 = <&gmac0_miim
+		     &gmac0_tx_bus2
+		     &gmac0_rx_bus2
+		     &gmac0_rgmii_clk
+		     &gmac0_rgmii_bus
+		     &gmac0_phy0_reset>;
+};
+
+&i2c4 {
+	/delete-property/ pinctrl-0;
+	status = "disabled";
+};
+
+&gmac1 {
+	snps,reset-gpio = <&gpio4 RK_PB3 GPIO_ACTIVE_LOW>;
+	snps,reset-delays-us = <20000 20000 100000>;
+	tx_delay = <0x36>;
+	rx_delay = <0x12>;
+
+	/delete-property/ pinctrl-0;
+	pinctrl-0 = <&gmac1m1_miim
+		     &gmac1m1_tx_bus2
+		     &gmac1m1_rx_bus2
+		     &gmac1m1_rgmii_clk
+		     &gmac1m1_rgmii_bus
+		     &gmac1_phy0_reset>;
+};
+
+&i2c0 {
+	/delete-node/ tcs4525@1c;
+	vdd_cpu: rk8600@40{
+		compatible = "rockchip,rk860x";
+		reg = <0x40>;
+		vin-supply = <&vcc3v3_sys>;
+		regulator-compatible = "rk860x-reg";
+		regulator-name = "vdd_cpu";
+		regulator-min-microvolt = <712500>;
+		regulator-max-microvolt = <1390000>;
+		regulator-init-microvolt = <900000>;
+		regulator-initial-mode = <1>;
+		regulator-ramp-delay = <2300>;
+		rockchip,suspend-voltage-selector = <1>;
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-state-mem {
+			regulator-off-in-suspend;
+		};
+	};
+
+	ext_rtc: ds1307@68 {
+		compatible = "dallas,ds1307";
+		reg = <0x68>;
+	};
+};
+
+/* flexspi */
+&sfc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&fspi_pins>;
+};
+
+&sdio_pwrseq {
+	/delete-property/ clocks;
+	/delete-property/ clock-names;
+	status = "disabled";
+};
+
+/* sdio */
+&sdmmc2 {
+	max-frequency = <50000000>;
+	/delete-property/ sd-uhs-sdr104;
+	/delete-property/ no-sd;
+	/delete-property/ no-mmc;
+	supports-sdio;
+};
+
+&wifi_host_wake_irq {
+	rockchip,pins = <4 RK_PB2 RK_FUNC_GPIO &pcfg_pull_down>;
+};
+
+/* sdio wifi io cannot share with 5G module */
+&wireless_wlan {
+	status = "disabled";
+	wifi_chip_type = "rtl8189fs";
+	WIFI,host_wake_irq = <&gpio4 RK_PB2 GPIO_ACTIVE_HIGH>;
+};
+
+&wireless_bluetooth {
+	status = "disabled";
+};
+
+&vcc_camera {
+	/delete-property/ gpio;
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	/delete-property/ enable-active-high;
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&spdif_8ch {
+	status = "disabled";
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+};
+
+&uart7 {
+	status = "okay";
+	pinctrl-0 = <&uart7m1_xfer>;
+};
+
+&uart8 {
+	status = "okay";
+	pinctrl-0 = <&uart8m0_xfer>;
+};
+
+&uart9 {
+	status = "okay";
+	pinctrl-0 = <&uart9m1_xfer>;
+};
+
+/* gpio1 RK_PA2 is used as i2s1 mclk */
+&pcie3x2 {
+	/delete-property/ reset-gpios;
+	vpcie3v3-supply = <&vcc3v3_pcie_fake>;
+};
+
+/* sata2 and pcie2x1 use common phy */
+&sata2 {
+	status = "disabled";
+};
+
+&pcie2x1 {
+	reset-gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie2x1_reset>;
+	vpcie3v3-supply = <&vcc3v3_pcie_fake>;
+	status = "okay";
+};
+
+/* gpio in vcc3v3_vga is used by user_led0 */
+&vcc3v3_vga {
+	/delete-property/ gpio;
+	/delete-property/ enable-active-high;
+};
+
+&leds {
+	/delete-node/ work;
+	som_led0 {
+		label = "heartbeat";
+		gpios = <&gpio0 RK_PD3 GPIO_ACTIVE_HIGH>;
+		linux,default-trigger = "heartbeat";
+		default-state = "off";
+	};
+
+	som_led1 {
+		label = "disk";
+		gpios = <&gpio0 RK_PD4 GPIO_ACTIVE_HIGH>;
+		linux,default-trigger = "mmc0";
+		default-state = "off";
+	};
+
+	user_led0 {
+		label = "user-led0";
+		gpios = <&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
+		linux,default-trigger = "default-on";
+		default-state = "off";
+	};
+
+	user_led1 {
+		label = "user-led1";
+		gpios = <&gpio0 RK_PD6 GPIO_ACTIVE_HIGH>;
+		linux,default-trigger = "default-on";
+		default-state = "off";
+	};
+};
+
+&i2c1 {
+	/delete-property/ pinctrl-0;
+	status = "disabled";
+};
+
+&can0 {
+	compatible = "rockchip,rk3568-can-2.0";
+	assigned-clock-rates = <200000000>;
+	pinctrl-0 = <&can0m0_pins>;
+	status = "okay";
+};
+
+&can1 {
+	compatible = "rockchip,rk3568-can-2.0";
+	assigned-clock-rates = <200000000>;
+	status = "okay";
+};
+
+&can2 {
+	compatible = "rockchip,rk3568-can-2.0";
+	assigned-clock-rates = <200000000>;
+	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+};
+
+&edp_in_vp0 {
+	status = "disabled";
+};
+
+&edp {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&edpdpm0_pins>;
+	hpd-gpios = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
+
+	ports {
+		port@1 {
+			reg = <1>;
+
+			edp_out_panel: endpoint {
+				remote-endpoint = <&panel_in_edp>;
+			};
+		};
+	};
+};
+
+/*
+ * video_phy0 needs to be enabled
+ * when dsi0 is enabled
+ */
+&dsi0_in_vp0 {
+	status = "disabled";
+};
+
+&dsi0_in_vp1 {
+	status = "disabled";
+};
+
+&dsi0 {
+	status = "disabled";
+};
+
+&dsi0_panel {
+	status = "disabled";
+};
+
+&backlight {
+	status = "disabled";
+};
+
+/*
+ * video_phy1 needs to be enabled
+ * when dsi1 is enabled
+ */
+&vcc3v3_lcd1_n {
+	/delete-property/ enable-active-high;
+	/delete-property/ gpio;
+};
+
+&dsi1_in_vp0 {
+	status = "disabled";
+};
+
+&dsi1_in_vp1 {
+	status = "okay";
+};
+
+&video_phy1 {
+	status = "okay";
+};
+
+&dsi1 {
+	status = "okay";
+};
+
+&backlight1 {
+	pwms = <&pwm4 0 25000 0>;
+};
+
+&route_dsi0 {
+	status = "disabled";
+};
+
+&route_dsi1 {
+	status = "okay";
+	connect = <&vp1_out_dsi1>;
+};
+
+&dsi1_panel {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&dsi1_panel_reset>;
+	reset-gpios = <&gpio4 RK_PC1 GPIO_ACTIVE_LOW>;
+
+	/delete-property/ panel-init-sequence;
+	panel-init-sequence = [
+		05 1E 01 01
+		23 00 02 EE 50
+		29 00 03 EA 85 55
+		23 00 02 30 00
+		23 00 02 31 00
+		29 00 03 90 50 15
+		23 00 02 24 20
+		23 00 02 99 00
+		23 00 02 79 00
+		23 00 02 95 74
+		23 00 02 7A 20
+		23 00 02 97 09
+		23 00 02 7D 08
+		23 00 02 56 83
+		23 00 02 EE 60
+		23 00 02 30 01
+		23 00 02 27 22
+		23 00 02 31 0F
+		23 00 02 32 D9
+		23 00 02 33 C0
+		23 00 02 34 1F
+		23 00 02 35 22
+		23 00 02 36 00
+		23 00 02 37 00
+		23 00 02 3A 24
+		23 00 02 3B 00
+		23 00 02 3C 1A
+		23 00 02 3D 11
+		23 00 02 3E 93
+		23 00 02 42 64
+		23 00 02 43 64
+		23 00 02 44 0B
+		23 00 02 46 4E
+		23 00 02 8B 90
+		23 00 02 8D 45
+		23 00 02 91 11
+		23 00 02 92 11
+		23 00 02 93 9F
+		23 00 02 9A 00
+		23 00 02 9C 80
+		29 00 06 47 0F 24 2C 39 36
+		29 00 06 5A 0F 24 2C 39 36
+		29 00 06 4C 4A 40 51 31 2F
+		29 00 06 51 2D 10 25 1F 30
+		29 00 05 56 37 46 5B 7F
+		29 00 05 69 37 46 5B 7F
+		23 00 02 EE 70
+		29 00 05 00 03 07 00 01
+		29 00 05 04 08 0C 55 01
+		29 00 03 0C 05 3D
+		29 00 06 10 05 08 00 01 05
+		29 00 06 15 00 15 0D 08 00
+		29 00 03 29 05 3D
+		29 00 06 60 3C 3C 07 05 17
+		29 00 06 65 15 13 11 01 03
+		29 00 06 6A 3C 3C 3C 3C 3C
+		29 00 06 6F 3C 3C 3C 3C 3C
+		29 00 03 74 3C 3C
+		29 00 06 80 3C 3C 06 04 16
+		29 00 06 85 14 12 10 00 02
+		29 00 06 8A 3C 3C 3C 3C 3C
+		29 00 06 8F 3C 3C 3C 3C 3C
+		29 00 03 94 3C 3C
+		29 00 03 EA 00 00
+		23 00 02 EE 00
+		05 78 01 11
+		05 1E 01 29
+	];
+};
+
+&dsi1_timing0 {
+	clock-frequency = <72000000>;
+	hactive = <800>;
+	vactive = <1280>;
+	hfront-porch = <98>;
+	hsync-len = <20>;
+	hback-porch = <22>;
+	vfront-porch = <24>;
+	vsync-len = <8>;
+	vback-porch = <8>;
+	hsync-active = <0>;
+	vsync-active = <0>;
+	de-active = <0>;
+	pixelclk-active = <1>;
+};
+
+&os04a10 {
+	status = "disabled";
+};
+
+&ucam_out0 {
+	/delete-property/ remote-endpoint;
+};
+
+&ov5695 {
+	status = "disabled";
+};
+
+&i2c2 {
+	status = "okay";
+	pinctrl-0 = <&i2c2m1_xfer>;
+
+	gt911@5d {
+		pinctrl-names = "default";
+		pinctrl-0 = <&gt911_int_pin
+				&gt911_rst_pin>;
+
+		compatible = "goodix,gt911";
+		reg = <0x5d>;
+		interrupt-parent = <&gpio2>;
+		interrupts = <18 0>;
+
+		irq-gpios = <&gpio2 RK_PC2 0>;
+		reset-gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
+	};
+
+	wusb3801: tcpc@60 {
+		status = "okay";
+		compatible = "willsemi,wusb3801";
+		reg = <0x60>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&wusb3801_int_pin &ch482d_sel_pin>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <RK_PA6 IRQ_TYPE_LEVEL_LOW>;
+		ch482d_sel-gpios = <&gpio4 RK_PD2 GPIO_ACTIVE_LOW>;
+	};
+
+	ov4689: ov4689@36 {
+		compatible = "ovti,ov4689";
+		status = "okay";
+		reg = <0x36>;
+		clocks = <&pmucru CLK_WIFI>;
+		clock-names = "xvclk";
+		pinctrl-names = "rockchip,camera_default";
+		pinctrl-0 = <&refclk_pins &mipi_cam_pwdn_pins>;
+		pwdn-gpios = <&gpio0 RK_PC4 GPIO_ACTIVE_HIGH>;
+		rockchip,grf = <&grf>;
+		power-domains = <&power RK3568_PD_VI>;
+		rockchip,camera-module-index = <0>;
+		rockchip,camera-module-facing = "back";
+		rockchip,camera-module-name = "RK-CMK-8M-2-v1";
+		rockchip,camera-module-lens-name = "CK8401";
+
+		port {
+			ov4689_out: endpoint {
+				remote-endpoint = <&mipi_in_ucam0>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
+
+/* lvds */
+&lvds_in_vp2 {
+	status = "disabled";
+};
+
+&lvds {
+	status = "disabled";
+	ports {
+		port@1 {
+			reg = <1>;
+
+			lvds_out_panel: endpoint {
+				remote-endpoint = <&panel_in_lvds>;
+			};
+		};
+	};
+};
+
+&video_phy0 {
+	status = "okay";
+};
+
+&route_lvds {
+	status = "disabled";
+	connect = <&vp2_out_lvds>;
+};
+
+&pwm7 {
+	status = "disabled";
+};
+
+&vcc3v3_lcd0_n {
+	/delete-property/ enable-active-high;
+	/delete-property/ gpio;
+};
+
+/* lvds touch panel driver ic */
+&spi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi0m0_cs0 &spi0m0_pins>;
+	status = "okay";
+
+	xpt2046@0 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&xpt2046_int_pin>;
+		reg = <0>;
+		compatible = "ti,ads7846";
+		interrupt-parent = <&gpio0>;
+		interrupts = <RK_PC7 0>;
+		spi-max-frequency = <1500000>;
+		pendown-gpio = <&gpio0 RK_PC7 0>;
+		ti,x-min = /bits/ 16 <0>;
+		ti,x-max = /bits/ 16 <0xfff>;
+		ti,y-min = /bits/ 16 <0>;
+		ti,y-max = /bits/ 16 <0xfff>;
+		ti,x-plate-ohms = /bits/ 16 <180>;
+		ti,pressure-max = /bits/ 16 <512>;
+		ti,debounce-max = /bits/ 16 <10>;
+		ti,debounce-tol = /bits/ 16 <30>;
+		ti,debounce-rep = /bits/ 16 <1>;
+		ti,settle-delay-usec = /bits/ 16 <150>;
+		ti,keep-vref-on = <1>;
+		/*
+		 * Do not set to wakeup source,
+		 * cause TL3568-EVM board will make xpt2046
+		 * int pin level change when suspend, this
+		 * will auto resume TL3568-EVM board.
+		 */
+		/delete-property/ linux,wakeup;
+		/delete-property/ wakeup-source;
+	};
+};
+
+/* gpio is used for wusb3801 */
+&vcc5v0_host {
+       /delete-property/ enable-active-high;
+       /delete-property/ gpio;
+       /delete-property/ pinctrl-names;
+       /delete-property/ pinctrl-0;
+};
+
+&rk809_codec {
+	pinctrl-0 = <&i2s1m0_mclk>;
+	spk-volume = <3>;
+	capture-volume = <0>;
+};
+
+/* TFT LCD */
+&rgb_in_vp2 {
+	status = "disabled";
+};
+
+&rgb {
+	status = "disabled";
+
+	ports {
+		port@1 {
+			reg = <1>;
+
+			rgb_out_panel: endpoint {
+				remote-endpoint = <&panel_in_rgb>;
+			};
+		};
+	};
+};
+
+&rk809_sound {
+	/delete-property/ simple-audio-card,hp-det-gpio;
+};
+
+&mipi_in_ucam0 {
+	remote-endpoint = <&ov4689_out>;
+};
+
+&sdhci {
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_bus8
+			&emmc_cmd
+			&emmc_clk>;
+	/delete-property/ no-sdio;
+	/delete-property/ no-sd;
+	supports-emmc;
+};
+
+/*
+ * Change mipi csi clk pin drv level to level2,
+ * this is decided by the hardware engineer.
+ */
+&refclk_pins {
+	rockchip,pins =
+		/* refclk_ou */
+		<0 RK_PA0 1 &pcfg_pull_up_drv_level_2>;
+};
+
+&threshold {
+	temperature = <115000>;
+};
+
+&target {
+	temperature = <115000>;
+};
+
+&i2c5 {
+	status = "disabled";
+	/delete-node/ mxc6655xa@15;
+};
+
+&rockchip_amp {
+	clocks = <&pmucru SCLK_UART0>, <&pmucru PCLK_UART0>,
+		<&cru SCLK_UART7>, <&cru PCLK_UART7>,
+		<&cru PCLK_TIMER>, <&cru CLK_TIMER4>, <&cru CLK_TIMER5>,
+		<&pmucru PCLK_GPIO0>, <&pmucru DBCLK_GPIO0>;
+	clock-names = "uart0_baudclk", "uart0_apb_pclk",
+		"uart7_baudclk", "uart7_apb_pclk",
+		"pclk", "timer4", "timer5",
+		"gpio0_pclk", "gpio0_dbclk";
+	assigned-clocks = <&pmucru SCLK_UART0>,
+			<&cru SCLK_UART7>,
+			<&cru CLK_TIMER4>,
+			<&cru CLK_TIMER5>,
+			<&pmucru DBCLK_GPIO0>;
+
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+
+	/delete-node/ amp-cpus;
+};
+
+&reserved_memory {
+	amp_core0_mem_reserved: amp-core0-mem@3800000 {
+		reg = <0x0 0x03800000 0x0 0x00800000>;
+		no-map;
+	};
+	amp_core1_mem_reserved: amp-core1-mem@2000000 {
+		reg = <0x0 0x02000000 0x0 0x00800000>;
+		no-map;
+	};
+	amp_core2_mem_reserved: amp-core2-mem@2800000 {
+		reg = <0x0 0x02800000 0x0 0x00800000>;
+		no-map;
+	};
+	amp_core3_mem_reserved: amp-core3-mem@3000000 {
+		reg = <0x0 0x03000000 0x0 0x00800000>;
+		no-map;
+	};
+};
+
+&cpu0_opp_table {
+	opp-1416000000 {
+		opp-hz = /bits/ 64 <1416000000>;
+		opp-microvolt = <900000 900000 900000>;
+		clock-latency-ns = <40000>;
+	};
+	opp-1608000000 {
+		status = "disabled";
+	};
+	opp-1800000000 {
+		status = "disabled";
+	};
+	opp-1992000000 {
+		status = "disabled";
+	};
+};
+
+&npu_opp_table {
+	opp-700000000 {
+		status = "disabled";
+	};
+	opp-800000000 {
+		status = "disabled";
+	};
+	opp-900000000 {
+		status = "disabled";
+	};
+	opp-1000000000 {
+		status = "disabled";
+	};
+
+};
+
+&gpu_opp_table {
+	opp-550000000 {
+		opp-hz = /bits/ 64 <550000000>;
+		opp-microvolt = <900000 900000 1000000>;
+	};
+
+	opp-600000000 {
+		status = "disabled";
+	};
+	opp-600000000 {
+		status = "disabled";
+	};
+	opp-700000000 {
+		status = "disabled";
+	};
+	opp-800000000 {
+		status = "disabled";
+	};
+};
+
+&pinctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rm500q_power
+			&rm500q_reset
+			&ext_wdt_wdi
+			&ext_wdt_set
+			&usb_net_reset /* GPIO3_D4 is used to usb net reset pin operating in uboot */
+			&heartbeat_led_pin
+			&disk_led_pin
+			&user_led0_pin
+			&user_led1_pin>;
+
+	gmac0-phy-reset {
+		gmac0_phy0_reset: gmac0-phy0-reset {
+			rockchip,pins = <2 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	gmac1-phy-reset {
+		gmac1_phy0_reset: gmac1-phy0-reset {
+			rockchip,pins = <4 RK_PB3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	pcie3x2-perstn {
+		pcie3x2_reset: pcie3x2-reset {
+			rockchip,pins = <1 RK_PA2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	pcie2x1-perstn {
+		pcie2x1_reset: pcie2x1-reset {
+			rockchip,pins = <1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	gpio-leds {
+		heartbeat_led_pin: heartbeat-led-pin {
+			rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+		disk_led_pin: disk-led-pin {
+			rockchip,pins = <0 RK_PD4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+		user_led0_pin: user-led0-pin {
+			rockchip,pins = <0 RK_PD5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+		user_led1_pin: user-led1-pin {
+			rockchip,pins = <0 RK_PD6 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	gpio-keys {
+		user_gpio_key0_pin: user-gpio-key0-pin {
+			rockchip,pins = <0 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	rm500q-module {
+		rm500q_power: rm500q-power {
+			rockchip,pins = <3 RK_PD5 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+		rm500q_reset: rm500q-reset {
+			rockchip,pins = <4 RK_PB2 RK_FUNC_GPIO &pcfg_pull_down>;
+		};
+	};
+
+	ext_wdt {
+		ext_wdt_wdi: ext-wdt-wdi {
+			rockchip,pins = <0 RK_PC2 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+		ext_wdt_set: ext-wdt-set {
+			rockchip,pins = <4 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	typec_swsel {
+		typec_swsel_pin: typec-swsel-pin {
+			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	dsi1_panel {
+		dsi1_panel_reset: dsi1-panel-reset {
+			rockchip,pins = <4 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	lvds_panel {
+		lvds_panel_enable: lvds-panel-enable {
+			rockchip,pins = <3 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	mipi_panel_tp {
+		gt911_int_pin: gt911-int-pin {
+			rockchip,pins = <2 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+		gt911_rst_pin: gt911-rst-pin {
+			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	lvds_panel_tp {
+		xpt2046_int_pin: xpt2046-int-pin {
+			rockchip,pins = <0 RK_PC7 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	wusb3801 {
+		wusb3801_int_pin: wusb3801-int-pin {
+			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+		ch482d_sel_pin: ch482d-sel-pin {
+			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	mipi_cam_pwdn {
+		mipi_cam_pwdn_pins: mipi-cam-pwdn-pins {
+			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	usb_net_ctrl {
+		usb_net_reset: usb-net-reset {
+			rockchip,pins = <3 RK_PD4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};

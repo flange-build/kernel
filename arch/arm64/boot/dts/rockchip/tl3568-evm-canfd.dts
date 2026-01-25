@@ -1,0 +1,24 @@
+#include "tl3568-evm.dts"
+
+/ {
+	model = "TL3568-EVM CANFD";
+};
+
+&can0 {
+	compatible = "rockchip,canfd-1.0";
+	assigned-clock-rates = <200000000>;
+	pinctrl-0 = <&can0m0_pins>;
+	status = "okay";
+};
+
+&can1 {
+	compatible = "rockchip,canfd-1.0";
+	assigned-clock-rates = <200000000>;
+	status = "okay";
+};
+
+&can2 {
+	compatible = "rockchip,canfd-1.0";
+	assigned-clock-rates = <200000000>;
+	status = "okay";
+};
