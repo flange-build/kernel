@@ -20,8 +20,6 @@
 	model = "Radxa E24C";
 	compatible = "radxa,e24c", "radxa,rock-2", "rockchip,rk3528a";
 
-	/delete-node/ chosen;
-
 	aliases {
 		mmc0 = &sdhci;
 		mmc1 = &sdmmc;

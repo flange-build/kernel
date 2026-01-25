@@ -18,8 +18,6 @@
 / {
 	compatible = "radxa,cm3i", "rockchip,rk3568";
 
-	/delete-node/ chosen;
-
 	rk809_sound: rk809-sound {
 		status = "disabled";
 		compatible = "rockchip,multicodecs-card";
