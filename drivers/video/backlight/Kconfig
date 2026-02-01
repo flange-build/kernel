@@ -477,6 +477,13 @@ config BACKLIGHT_LED
 	  If you have a LCD backlight adjustable by LED class driver, say Y
 	  to enable this driver.
 
+config BACKLIGHT_WAVESHARE
+	tristate "Backlight driver for Waveshare DSI displays"
+	depends on I2C
+	help
+	  If you have a Waveshare DSI display with I2C backlight control,
+	  say Y to enable this driver.
+
 endif # BACKLIGHT_CLASS_DEVICE
 
 endmenu
