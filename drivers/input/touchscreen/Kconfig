@@ -420,6 +420,19 @@ config TOUCHSCREEN_GOODIX
 	  To compile this driver as a module, choose M here: the
 	  module will be called goodix.
 
+config TOUCHSCREEN_GOODIX_POLL
+	tristate "Goodix I2C touchscreen (polling mode)"
+	depends on I2C
+	help
+	  Say Y here if you have a Goodix touchscreen and want to use
+	  polling mode instead of interrupt mode. This is useful when
+	  the interrupt line is not available or not working properly.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called goodix_poll.
+
 config TOUCHSCREEN_GSL3673
 	tristate "gsl3673 touchpad driver"
 	help
