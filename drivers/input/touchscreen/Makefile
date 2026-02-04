@@ -51,6 +51,7 @@ obj-$(CONFIG_TOUCHSCREEN_FTS)		+= focaltech_touch/
 obj-$(CONFIG_TOUCHSCREEN_FT5726)	+= focaltech_touch_ft5726/
 obj-$(CONFIG_TOUCHSCREEN_FUJITSU)	+= fujitsu_ts.o
 obj-$(CONFIG_TOUCHSCREEN_GOODIX)	+= goodix_ts.o
+obj-$(CONFIG_TOUCHSCREEN_GOODIX_POLL)	+= goodix_poll.o
 obj-$(CONFIG_TOUCHSCREEN_GSL3673)	+= gsl3673-ts.o
 gsl3673-ts-y := gsl3673.o gsl_point_id.o
 obj-$(CONFIG_TOUCHSCREEN_GSL3673_800X1280)	+= gsl3673-800x1280.o

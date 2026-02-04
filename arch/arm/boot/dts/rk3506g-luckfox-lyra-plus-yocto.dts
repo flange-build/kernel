@@ -7,6 +7,20 @@
 
 / {
 	chosen {
-		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=tty1 console=ttyFIQ0 root=/dev/mtdblock2 ubi.mtd=2 rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1";
+		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=tty1 console=ttyFIQ0 root=/dev/mtdblock2 rootfstype=ext4 rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1";
 	};
+};
+
+/* Disable gt911 (not present, only gt9271 at 0x5d) */
+&gt911 {
+	status = "disabled";
+};
+
+/* 10.1inch touchscreen - GT9271 with goodix_poll driver */
+&gt9271 {
+	compatible = "goodix,gt9271-poll";
+	touchscreen-size-x = <800>;
+	touchscreen-size-y = <1280>;
+	touchscreen-inverted-x;
+	touchscreen-swapped-x-y;
 };
