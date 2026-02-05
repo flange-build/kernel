@@ -7,7 +7,18 @@
 
 / {
 	chosen {
-		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=tty1 console=ttyFIQ0 root=/dev/mtdblock2 rootfstype=ext4 rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1 weston=false";
+		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=tty1 console=ttyFIQ0 root=/dev/mtdblock2 rootfstype=ext4 rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1 weston=false fbcon=nodefer";
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		drm_logo: drm-logo@0 {
+			compatible = "rockchip,drm-logo";
+			reg = <0x0 0x0>;
+		};
 	};
 };
 
