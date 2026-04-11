@@ -284,7 +284,7 @@
 &bus_npu {
 	bus-supply = <&vdd_logic>;
 	pvtm-supply = <&vdd_cpu>;
-	status = "okay";
+	status = "disabled";
 };
 
 //can0接口
@@ -760,12 +760,12 @@
 //神经网络处理
 &rknpu {
 	rknpu-supply = <&vdd_npu>;
-	status = "okay";
+	status = "disabled";
 };
 
 //神经网络内存管理
 &rknpu_mmu {
-	status = "okay";
+	status = "disabled";
 };
 
 //ADC
