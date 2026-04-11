@@ -170,6 +170,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-rk817-tablet-v10.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-rock-3c-aic8800ds2.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-rock-3c.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-neons-core-wavesharecm4-nano-b.dtb
+dtb-$(CONFIG_ARCH_ROCKCHIP) += tspi-rk3566-user-v10-ext39-linux.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3567-evb2-lp4x-v10.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3567-evb2-lp4x-v10-dual-channel-lvds.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3567-evb2-lp4x-v10-one-vp-two-single-channel-lvds.dtb
