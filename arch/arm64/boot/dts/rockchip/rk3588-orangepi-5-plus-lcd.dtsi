@@ -28,6 +28,7 @@
 &i2c7 {
 	status = "okay";
 
+	/* Demo for gt9271 touchscreen
 	gt9xx_0: touchscreen@14 {
 		compatible = "goodix,gt9271";
 		reg = <0x14>;
@@ -42,4 +43,5 @@
 		touchscreen-size-y = <800>;
 		status = "okay";
 	};
+	*/
 };
