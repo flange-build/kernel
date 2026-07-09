@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
+ */
+
+/dts-v1/;
+
+// alientek dtsi
+#include "rk3506b-alientek.dtsi"
+
+// default 720p
+#include "rk3506-alientek-mipi720x1280.dtsi"
+
+#include "rk3506-amp.dtsi"
+
+/ {
+	cpus {
+		cpu2: cpu@f02 {
+                        device_type = "cpu";
+                        compatible = "arm,cortex-a7";
+                        reg = <0xf02>;
+                        enable-method = "psci";
+                        clocks = <&cru ARMCLK>;
+                        operating-points-v2 = <&cpu0_opp_table>;
+                };
+	};
+        chosen {
+        // rw rootfs
+                bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=ttyFIQ0 ubi.mtd=5 root=ubi0:rootfs rw rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1 storagemedia=mtd androidboot.storagemedia=mtd androidboot.mode=normal";
+        };
+};
+
+&rpmsg {
+	mboxes = <&mailbox0 0 &mailbox3 0>;
+        /* CPU3: link-id 0x03; */
+        rockchip,link-id = <0x03>;
+};
+
+&mailbox3 {
+        rockchip,txpoll-period-ms = <1>;
+        status = "okay";
+};
+
+// UART2使用了GPIO1_C2，AMP的串口的是UART4，UART4使用了GPIO1_C2，故禁用UART2
+&uart2 {
+	status = "disabled";
+};

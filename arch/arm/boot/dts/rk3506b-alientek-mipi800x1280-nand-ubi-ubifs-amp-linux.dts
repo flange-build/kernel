@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
+ */
+
+/dts-v1/;
+
+// alientek dtsi
+#include "rk3506b-alientek.dtsi"
+
+// default 800p
+#include "rk3506-alientek-mipi800x1280.dtsi"
+
+#include "rk3506-amp.dtsi"
+
+/ {
+        chosen {
+        // rw rootfs
+                bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=ttyFIQ0 ubi.mtd=5 root=ubi0:rootfs rw rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1 storagemedia=mtd androidboot.storagemedia=mtd androidboot.mode=normal";
+        };
+};
+
+// UART2使用了GPIO1_C2，AMP的串口的是UART4，UART4使用了GPIO1_C2，故禁用UART2
+&uart2 {
+        status = "disabled";
+};

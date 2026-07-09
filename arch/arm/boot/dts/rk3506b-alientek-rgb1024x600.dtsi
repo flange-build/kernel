@@ -1,0 +1,166 @@
+#include <dt-bindings/display/media-bus-format.h>
+// 由于正点原子RK3506B的mipi接口在核心板上，所以rgb背光和复位io是无法与mipi使用同一组了，RK3506B默认底板无rgb接口，参考07、硬件资料/08、ATK-DLRK3506B RGB888方案转接板
+// 并且由于io复用，见本设备树最后，将部分设备设置为"disabled", 因为这部分是rgb使用过的io。
+/ {
+    rgb_backlight: rgb-backlight {
+        compatible = "pwm-backlight";
+        pwms = <&pwm0_4ch_3 0 25000 0>;
+        brightness-levels = <
+                0  20  20  21  21  22  22  23
+                23  24  24  25  25  26  26  27
+                27  28  28  29  29  30  30  31
+                31  32  32  33  33  34  34  35
+                35  36  36  37  37  38  38  39
+                40  41  42  43  44  45  46  47
+                48  49  50  51  52  53  54  55
+                56  57  58  59  60  61  62  63
+                64  65  66  67  68  69  70  71
+                72  73  74  75  76  77  78  79
+                80  81  82  83  84  85  86  87
+                88  89  90  91  92  93  94  95
+                96  97  98  99 100 101 102 103
+                104 105 106 107 108 109 110 111
+                112 113 114 115 116 117 118 119
+                120 121 122 123 124 125 126 127
+                128 129 130 131 132 133 134 135
+                136 137 138 139 140 141 142 143
+                144 145 146 147 148 149 150 151
+                152 153 154 155 156 157 158 159
+                160 161 162 163 164 165 166 167
+                168 169 170 171 172 173 174 175
+                176 177 178 179 180 181 182 183
+                184 185 186 187 188 189 190 191
+                192 193 194 195 196 197 198 199
+                200 201 202 203 204 205 206 207
+                208 209 210 211 212 213 214 215
+                216 217 218 219 220 221 222 223
+                224 225 226 227 228 229 230 231
+                232 233 234 235 236 237 238 239
+                240 241 242 243 244 245 246 247
+                248 249 250 251 252 253 254 255
+            >;
+        default-brightness-level = <200>;
+        status = "okay";   
+    };
+
+    panel: panel {
+        compatible = "simple-panel";
+        bus-format = <MEDIA_BUS_FMT_RGB888_1X24>;
+        backlight = <&rgb_backlight>;
+        reset-gpios = <&gpio0 RK_PC4 GPIO_ACTIVE_LOW>;
+        reset-delay-ms = <10>;
+        status = "okay";
+
+        display-timings {
+            native-mode = <&rgb_time0>;
+            rgb_time0: timing0 {
+                clock-frequency = <51000000>;
+                hactive = <1024>;
+                vactive = <600>;
+                hfront-porch = <160>;
+                hback-porch = <140>;
+                hsync-len = <20>;
+                vback-porch = <20>;
+                vfront-porch = <12>;
+                vsync-len = <3>;
+
+                hsync-active = <0>;
+                vsync-active = <0>;
+                de-active = <1>;
+                pixelclk-active = <0>;
+            };
+        };
+
+        port {
+            panel_in_rgb: endpoint {
+                remote-endpoint = <&rgb_out_panel>;
+            };
+        };
+    };
+};
+
+// =======================================================================================
+// I2C1 控制器配置
+// =======================================================================================
+// 说明：
+// 1. 核心原因：I2C2 已被核心板占用，因此改用 I2C1 连接外部触摸屏
+// 2. 引脚变更：I2C1 的 SCL/SDA 原为RM_IO24/RM_IO25（即gpio1-9 gpio1-10为RGB888使用的IO）
+// 3. 中断/复位引脚调整：从原 GPIO0 PA6/PA7(核心板上)改为 GPIO3_PA6/PA7
+// =======================================================================================
+&i2c1 {
+    status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&rm_io4_i2c1_scl
+		     &rm_io5_i2c1_sda>;
+
+    rgb_touch: gt911@14 {
+                compatible = "goodix,gt911";
+                reg = <0x14>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&touch2_gpio>;
+                interrupt-parent = <&gpio3>;
+                interrupts = <RK_PA6 IRQ_TYPE_LEVEL_LOW>;
+                irq-gpios = <&gpio3 RK_PA6 IRQ_TYPE_LEVEL_LOW>;
+                reset-gpios = <&gpio3 RK_PA7 GPIO_ACTIVE_HIGH>;
+                wakeup-source;
+                //touchscreen-inverted-x;
+                //touchscreen-swapped-x-y;
+                status = "okay";
+        };
+};
+
+&pinctrl {
+    touch2 {
+                touch2_gpio: touch2-gpio {
+                        rockchip,pins = <3 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>,
+                                        <3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>;
+                };
+        };
+};
+
+&pwm0_4ch_3 {   //GPIO0_0 backlight
+	pinctrl-names = "active";
+	pinctrl-0 = <&rm_io0_pwm0_ch3>;
+	status = "okay";
+};
+
+&rgb {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&rgb888_pins>;
+	ports {
+		rgb_out: port@1 {
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			rgb_out_panel: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&panel_in_rgb>;
+			};
+		};
+	};
+
+};
+
+&rgb_in_vop {
+	status = "okay";
+};
+
+&route_rgb {
+    status = "okay";
+};
+
+&vop_out_dsi {
+        /delete-property/ remote-endpoint;
+};
+
+// gpio1-18
+&uart2 {
+    status = "disabled";
+};
+
+// gpio0-0
+&gmac0 {
+    status = "disabled";
+};

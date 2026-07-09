@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
+ */
+
+/dts-v1/;
+
+// alientek dtsi
+#include "rk3506b-alientek.dtsi"
+
+// default 800p
+#include "rk3506-alientek-mipi800x1280.dtsi"
+
+
+/ {
+        chosen {
+                bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rw rootwait";
+	};
+};
